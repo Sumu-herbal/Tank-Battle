@@ -1411,6 +1411,7 @@ function handleFirstMessage(ws, msg) {
       if (old.disconnectTimeout) clearTimeout(old.disconnectTimeout);
       old.disconnectTimeout = null;
       old.disconnectedAt = 0;
+      old.alive = true; // 即使断线期间被击杀也复活
       old.shieldActive = true;
       old.shieldTimer = 5000;
       ws.playerId = msg.playerId;
@@ -1451,7 +1452,8 @@ function handleFirstMessage(ws, msg) {
 
   // 新玩家
   const playerId = 'p' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
-  const fruitName = getRandomFruitName();
+  // 使用客户端传来的名字，否则随机水果名
+  const fruitName = (msg.name && msg.name.length <= 8) ? msg.name : getRandomFruitName();
   console.log(`👤 新玩家: ${fruitName} (${playerId})`);
 
   const spawn = game.spawnPlayer(playerId, fruitName);

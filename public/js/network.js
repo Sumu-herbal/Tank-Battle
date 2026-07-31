@@ -77,6 +77,12 @@ class Network {
                 console.log('🔄 发送重连请求:', this.playerId);
                 this._setState('reconnecting');
                 this.send({ type: 'reconnect', playerId: this.playerId, sessionToken: this.sessionToken });
+            } else {
+                // 新玩家：发送 join 让服务器立即创建玩家（带上名字如果有的话）
+                console.log('🆕 新玩家加入');
+                const nameInput = document.getElementById('playerName');
+                const name = nameInput ? nameInput.value.trim().substring(0, 8) : '';
+                this.send({ type: 'join', name: name || undefined });
             }
             // 处理缓冲消息
             this._flushBuffer();
