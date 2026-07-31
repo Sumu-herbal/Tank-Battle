@@ -1,0 +1,5 @@
+node_modules/
+logs/
+*.log
+.pm2/
+dump.pm2

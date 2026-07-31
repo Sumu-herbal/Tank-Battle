@@ -1,0 +1,19 @@
+{
+  "name": "tank-battle",
+  "version": "1.0.0",
+  "description": "2D像素风坦克大战 - 局域网多人对战 + 战术AI协同",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js --dev",
+    "deploy": "pm2 start ecosystem.config.js",
+    "stop": "pm2 stop tank-battle",
+    "restart": "pm2 restart tank-battle",
+    "logs": "pm2 logs tank-battle",
+    "status": "pm2 status",
+    "un-deploy": "pm2 delete tank-battle"
+  },
+  "dependencies": {
+    "ws": "^8.16.0"
+  }
+}

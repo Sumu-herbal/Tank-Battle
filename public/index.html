@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="screen-orientation" content="landscape">
+<title>Tank Battle · 坦克大战</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- 横屏提示（移动端竖屏时显示） -->
+  <div id="rotateHint">
+    <div class="rotate-icon">📱</div>
+    <div class="rotate-icon-arrow">↻</div>
+    <p>请旋转设备至横屏模式</p>
+    <p class="rotate-sub">以获得最佳游戏体验</p>
+  </div>
+
+  <!-- 重连横幅 -->
+  <div id="reconnectBanner" style="display:none;">🔗 连接服务器...</div>
+
+  <!-- 主菜单 -->
+  <div id="menu" class="screen">
+    <div class="menu-container">
+      <div class="pixel-title">
+        TANK BATTLE
+        <span class="sub">坦克大战 · 公网对战</span>
+      </div>
+      <div class="menu-info">
+        <span class="tag">🎯 战术AI协同</span>
+        <span class="tag">🌐 公网多人</span>
+        <span class="tag">🎮 创新道具</span>
+        <span class="tag">🗺️ 动态关卡</span>
+      </div>
+      <input id="playerName" class="menu-input" placeholder="输入昵称..." maxlength="8" autocomplete="off">
+      <div id="connectStatus" class="menu-status">正在连接服务器...</div>
+      <button id="btnJoin" class="pixel-btn">⚔️ 加 入 战 斗</button>
+      <div class="menu-keys">
+        <div class="key-group">
+          <div class="key-label">🎮 操作说明</div>
+          <p><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 移动</p>
+          <p>🔫 自动射击 &nbsp; <kbd>Enter</kbd> 聊天</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 游戏界面 -->
+  <div id="gameScreen" class="screen hidden">
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="hud">
+      <span class="hud-item" id="hudWave">W1</span>
+      <span class="hud-sep"></span>
+      <span class="hud-item" id="hudEnemies">🎯0</span>
+      <span class="hud-sep"></span>
+      <span class="hud-item base-ok" id="hudBase">🏠 BASE</span>
+      <span class="hud-sep"></span>
+      <span class="hud-item" id="hudScore">💯0</span>
+      <span class="hud-sep"></span>
+      <span class="hud-item" id="hudKills">💀0</span>
+      <div id="hudHealthBar"><div id="hudHealthFill"></div></div>
+      <span class="hud-item" id="hudGold">🪙0</span>
+    </div>
+
+    <div id="scoreboard">
+      <div id="sbTitle">🏆 RANK</div>
+      <div id="sbList"><div class="sb-row">等待玩家...</div></div>
+    </div>
+
+    <div id="powerupBar">
+      <span id="puActive">道具就绪</span>
+      <span id="puTimer"></span>
+    </div>
+
+    <div id="chatBox">
+      <div id="chatMessages"></div>
+      <input id="chatInput" placeholder="Enter 聊天..." maxlength="100">
+    </div>
+
+    <div id="deathOverlay" class="hidden"><span>💥 被击毁 · 重生中</span></div>
+
+    <div id="gameOverOverlay" class="hidden">
+      <span id="gameOverText">GAME OVER</span>
+      <button id="btnRestart" class="pixel-btn">↻ 重新开始</button>
+    </div>
+
+    <div id="errorInfo" style="display:none;position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(255,0,0,0.85);color:#fff;padding:8px 16px;border-radius:8px;font-size:11px;z-index:100;max-width:90vw;text-align:center;"></div>
+
+    <!-- 触摸控件（移动端） -->
+    <div id="touchControls" class="touch-ctrl-hidden">
+      <div id="touchJoystick" class="touch-joy">
+        <div id="touchJoyKnob" class="touch-joy-knob"></div>
+      </div>
+      <div id="touchFire" class="touch-fire">🔫</div>
+      <div id="touchSkill" class="touch-skill">⚡</div>
+    </div>
+  </div>
+</div>
+
+<script src="js/constants.js"></script>
+<script src="js/input.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/sprites.js"></script>
+<script src="js/particles.js"></script>
+<script src="js/renderer.js"></script>
+<script src="js/network.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
