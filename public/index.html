@@ -95,7 +95,7 @@ body{display:flex;justify-content:center;align-items:center;font-family:'Segoe U
 // ============================================================
 //  星核战纪：元素共鸣  v2 — 增强版
 // ============================================================
-const W=540,H=960,PSPD=6,BSPD=8,EBSPD=3,ABSORB_R=32,ULT_PB=5,ULT_DUR=300,IFRAMES=60,MAX_HP=5,FR=7;
+const W=540,H=960,PSPD=6,BSPD=8,EBSPD=3,ESR=55,ABSORB_R=32,ULT_PB=5,ULT_DUR=300,IFRAMES=60,MAX_HP=5,FR=7;
 const FIRE='fire',ICE='ice',PURPLE='purple';
 const EC={
   fire:{m:'#ff4422',g:'#ff8866',d:'#aa2200',b:'#ff6644',p:'#ffaa33'},
@@ -419,7 +419,7 @@ function update(){
   // 敌人生成
   eSpawnT++;
   let maxE=8+stage*2;if(bossAlive)maxE=4;
-  if(eSpawnT>=Math.max(30,ENEMY_SPAWN_RATE-stage*3)&&enemies.filter(e=>e.type!=='boss').length<maxE&&!bossAlive){
+  if(eSpawnT>=Math.max(30,ESR-stage*3)&&enemies.filter(e=>e.type!=='boss').length<maxE&&!bossAlive){
     eSpawnT=0;
     let s=STAGES[(stage-1)%STAGES.length];let elem=s.elem==='mixed'?(Math.random()>0.5?FIRE:ICE):s.elem;
     let types=['grunt','grunt','grunt','aimer','spreader'];if(stage>=4)types.push('purple');
