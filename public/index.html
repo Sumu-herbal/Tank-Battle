@@ -7,37 +7,22 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>星核战纪：元素共鸣</title>
 <style>
-/* ===== 全局重置 ===== */
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:none;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
 body{display:flex;justify-content:center;align-items:center;font-family:'Segoe UI','PingFang SC',sans-serif;}
-
-/* ===== 9:16 游戏容器 ===== */
 #game-wrap{position:relative;aspect-ratio:9/16;max-height:100vh;max-width:100vw;overflow:hidden;background:radial-gradient(ellipse at center,#0a0a2e 0%,#000010 100%);}
-#game-wrap.landscape{aspect-ratio:16/9;} /* PC 备用 */
-
-/* ===== Canvas ===== */
 #gc{display:block;width:100%;height:100%;}
-
-/* ===== UI 叠加层 ===== */
 #ui{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:10;display:flex;flex-direction:column;justify-content:space-between;}
-
-/* ---- 顶部 HUD ---- */
 #hud-top{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 12px;}
 #hud-score{color:#ffe080;font-size:clamp(12px,3vw,18px);font-weight:700;text-shadow:0 0 8px rgba(255,224,128,0.5);letter-spacing:1px;}
-#hud-wave{color:#80d0ff;font-size:clamp(10px,2.5vw,14px);text-shadow:0 0 6px rgba(128,208,255,0.5);text-align:right;}
+#hud-stage{color:#80d0ff;font-size:clamp(10px,2.5vw,14px);text-shadow:0 0 6px rgba(128,208,255,0.5);text-align:right;}
 .hud-label{font-size:0.65em;opacity:0.6;}
-
-/* ---- 底部控制区 ---- */
+#hud-hp{display:flex;gap:4px;font-size:20px;margin-top:4px;}
 #hud-bottom{display:flex;flex-direction:column;align-items:center;padding:8px 12px 16px;gap:8px;}
-
-/* 大招能量条 */
 #ultimate-bar-wrap{width:80%;height:clamp(6px,1.5vw,10px);background:rgba(255,255,255,0.08);border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.15);}
 #ultimate-bar-fill{height:100%;width:0%;background:linear-gradient(90deg,#ff4444,#ff8800,#ffe040);border-radius:10px;transition:width 0.2s;box-shadow:0 0 10px rgba(255,136,0,0.6);}
 #ultimate-bar-fill.ready{animation:ultPulse 0.5s ease-in-out infinite;}
 @keyframes ultPulse{0%,100%{box-shadow:0 0 10px rgba(255,136,0,0.6);}50%{box-shadow:0 0 24px rgba(255,200,0,1);}}
-
-/* 底部按钮 */
 #btns{display:flex;justify-content:space-between;align-items:center;width:100%;pointer-events:auto;}
 .btn-elem{width:clamp(48px,12vw,64px);height:clamp(48px,12vw,64px);border-radius:50%;border:2px solid rgba(255,255,255,0.3);font-size:clamp(20px,5vw,28px);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;background:rgba(0,0,0,0.5);}
 .btn-elem:active{transform:scale(0.9);}
@@ -45,64 +30,47 @@ body{display:flex;justify-content:center;align-items:center;font-family:'Segoe U
 #btn-fire.active{background:rgba(255,40,0,0.6);box-shadow:0 0 35px rgba(255,60,20,0.9);border-color:#ff6030;}
 #btn-ice{background:rgba(20,100,255,0.3);border-color:rgba(80,160,255,0.7);box-shadow:0 0 20px rgba(20,100,255,0.4);}
 #btn-ice.active{background:rgba(0,60,255,0.6);box-shadow:0 0 35px rgba(20,100,255,0.9);border-color:#4080ff;}
-#btn-ult{width:clamp(56px,14vw,72px);height:clamp(56px,14vw,72px);border-radius:50%;background:rgba(255,120,0,0.2);border:3px solid rgba(255,180,0,0.4);font-size:clamp(24px,6vw,32px);display:none;align-items:center;just-content:center;cursor:pointer;transition:all 0.2s;}
+#btn-ult{width:clamp(56px,14vw,72px);height:clamp(56px,14vw,72px);border-radius:50%;background:rgba(255,120,0,0.2);border:3px solid rgba(255,180,0,0.4);font-size:clamp(24px,6vw,32px);display:none;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;}
 #btn-ult.show{display:flex;animation:ultPulse 0.5s ease-in-out infinite;}
 #btn-ult:active{transform:scale(0.85);background:rgba(255,180,0,0.5);}
-
-/* 元素状态指示器 */
 #elem-indicator{position:absolute;top:50%;right:8px;transform:translateY(-50%);width:clamp(6px,1.5vw,10px);height:clamp(60px,15vw,100px);border-radius:10px;transition:background 0.3s;}
 #elem-indicator.fire{background:linear-gradient(to bottom,#ff6020,#ff2000);box-shadow:0 0 15px rgba(255,60,20,0.6);}
 #elem-indicator.ice{background:linear-gradient(to bottom,#4080ff,#1040dd);box-shadow:0 0 15px rgba(20,100,255,0.6);}
-
-/* 消息提示 */
-#msg{position:absolute;top:30%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:clamp(14px,3.5vw,20px);font-weight:700;text-shadow:0 0 10px rgba(255,255,255,0.7);pointer-events:none;opacity:0;transition:opacity 0.3s;}
+#elem-indicator.locked{background:linear-gradient(to bottom,#cc44ff,#8800cc);box-shadow:0 0 15px rgba(200,60,255,0.8);animation:lockBlink 0.3s infinite;}
+@keyframes lockBlink{50%{opacity:0.3;}}
+#msg{position:absolute;top:30%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:clamp(14px,3.5vw,22px);font-weight:700;text-shadow:0 0 10px rgba(255,255,255,0.7);pointer-events:none;opacity:0;transition:opacity 0.3s;text-align:center;white-space:nowrap;}
 #msg.show{opacity:1;}
-
-/* 游戏结束 */
-#gameover{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.75);display:none;flex-direction:column;justify-content:center;align-items:center;gap:16px;z-index:20;}
+#gameover{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.78);display:none;flex-direction:column;justify-content:center;align-items:center;gap:16px;z-index:20;}
 #gameover.show{display:flex;}
 #gameover h2{font-size:clamp(24px,6vw,36px);color:#fff;text-shadow:0 0 20px rgba(255,255,255,0.5);}
 #gameover .score{font-size:clamp(16px,4vw,24px);color:#ffe080;}
+#gameover .stage-info{font-size:clamp(13px,3vw,18px);color:#c0c0d0;}
 #btn-restart{padding:12px 32px;border-radius:30px;background:linear-gradient(135deg,#ff6020,#ff2080);color:#fff;font-size:clamp(14px,3.5vw,18px);font-weight:700;border:none;cursor:pointer;pointer-events:auto;letter-spacing:1px;}
 #btn-restart:active{transform:scale(0.95);}
-
-/* PC 端键盘提示 */
 #keys-hint{position:absolute;bottom:50%;left:8px;color:rgba(255,255,255,0.3);font-size:10px;pointer-events:none;display:flex;flex-direction:column;gap:4px;}
 @media (pointer:coarse){#keys-hint{display:none;}}
 @media (pointer:fine){#btns{display:none;}}
-
-/* 竖屏旋转提示 */
 #rotate-hint{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:999;flex-direction:column;justify-content:center;align-items:center;gap:12px;color:#fff;font-size:18px;}
 @media (orientation:landscape) and (max-width:600px){#rotate-hint{display:flex;}}
 </style>
 </head>
 <body>
-
 <div id="rotate-hint">📱↻<br>请旋转设备至竖屏模式</div>
-
 <div id="game-wrap">
   <canvas id="gc"></canvas>
-
-  <!-- 元素指示器 -->
   <div id="elem-indicator" class="fire"></div>
-
-  <!-- 消息提示 -->
   <div id="msg"></div>
-
   <div id="ui">
-    <!-- 顶部 HUD -->
     <div id="hud-top">
       <div>
         <div id="hud-score">🏆 0</div>
-        <div class="hud-label">SCORE</div>
+        <div id="hud-hp"></div>
       </div>
       <div>
-        <div id="hud-wave">WAVE 1</div>
-        <div class="hud-label">FIRESTORM</div>
+        <div id="hud-stage">STAGE 1</div>
+        <div class="hud-label">IGNITION</div>
       </div>
     </div>
-
-    <!-- 底部 -->
     <div id="hud-bottom">
       <div id="ultimate-bar-wrap"><div id="ultimate-bar-fill"></div></div>
       <div id="btns">
@@ -111,709 +79,514 @@ body{display:flex;justify-content:center;align-items:center;font-family:'Segoe U
         <button class="btn-elem" id="btn-ice">❄️</button>
       </div>
       <div id="keys-hint">
-        <span>WASD/方向键: 移动</span>
-        <span>空格/J: 切换元素</span>
-        <span>K: 释放大招</span>
+        <span>WASD/方向键: 移动</span><span>空格/J: 切换元素</span><span>K: 大招</span>
       </div>
     </div>
   </div>
-
-  <!-- 游戏结束 -->
   <div id="gameover">
     <h2>💥 战机陨落</h2>
-    <div class="score" id="final-score">最终得分: 0</div>
+    <div class="score" id="final-score"></div>
+    <div class="stage-info" id="final-stage"></div>
     <button id="btn-restart" onclick="restartGame()">🔄 再次出击</button>
   </div>
 </div>
 
 <script>
 // ============================================================
-//  星核战纪：元素共鸣  -  单文件 HTML5 Canvas 原型
+//  星核战纪：元素共鸣  v2 — 增强版
 // ============================================================
-
-// ── 常量 ────────────────────────────────────────────────────
-const W = 540, H = 960; // 9:16 设计分辨率
-const PLAYER_SPD = 6;
-const BULLET_SPD = 8;
-const ENEMY_BULLET_SPD = 3.5;
-const ENEMY_SPAWN_RATE = 60; // 帧
-const ABSORB_RANGE = 28;    // 吸收判定半径
-const ULT_CHARGE_PER_BULLET = 6; // 每颗同色弹充能量 (%)
-const ULT_DURATION = 300;   // 大招持续时间(帧)，~5s@60fps
-const INVINCIBILITY_FRAMES = 60; // 受击无敌帧
-const MAX_HP = 5;
-const AUTO_FIRE_RATE = 8;   // 帧
-
-// ── 元素类型 ────────────────────────────────────────────────
-const FIRE = 'fire', ICE = 'ice';
-const ELEM_COLORS = {
-  fire:  { main:'#ff4422', glow:'#ff8866', dark:'#aa2200', bullet:'#ff6644', particle:'#ffaa33' },
-  ice:   { main:'#2266ff', glow:'#6699ff', dark:'#0033aa', bullet:'#4488ff', particle:'#88ccff' },
-  enemyF:'#ff5533',
-  enemyI:'#3377ff',
-  purple:'#cc44ff',
-  gold:  '#ffe040',
+const W=540,H=960,PSPD=6,BSPD=8,EBSPD=3,ABSORB_R=32,ULT_PB=5,ULT_DUR=300,IFRAMES=60,MAX_HP=5,FR=7;
+const FIRE='fire',ICE='ice',PURPLE='purple';
+const EC={
+  fire:{m:'#ff4422',g:'#ff8866',d:'#aa2200',b:'#ff6644',p:'#ffaa33'},
+  ice:{m:'#2266ff',g:'#6699ff',d:'#0033aa',b:'#4488ff',p:'#88ccff'},
+  purple:{m:'#cc44ff',g:'#dd88ff',d:'#8800cc',b:'#cc44ff',p:'#dd88ff'},
+  enemyF:'#ff5533',enemyI:'#3377ff',gold:'#ffe040',white:'#ffffff'
 };
 
-// ── 全局状态 ────────────────────────────────────────────────
-let canvas, ctx;
-let player, enemies, enemyBullets, playerBullets, particles;
-let score, wave, waveTimer, enemySpawnTimer, frameCount;
-let ultimateCharge, ultimateActive, ultimateTimer;
-let playerInvincible, invincibleTimer;
-let gameRunning, gameOver;
-let keys = {}, touches = {};
-let touchActive = false, touchDX = 0, touchDY = 0;
-let scale = 1, offsetX = 0, offsetY = 0;
+// ── 全局 ──────────────────────────────────────────────────
+let cv,ctx,player,enemies=[],eBullets=[],pBullets=[],particles=[];
+let score=0,stage=1,stageTimer=0,eSpawnT=0,fc=0,ultCharge=0,ultActive=false,ultTimer=0;
+let pInv=false,invTimer=0,gameRunning=true,gameOver=false;
+let bossAlive=false,bossRef=null,eLocked=false,eLockTimer=0;
+let keys={},touches={},touchOn=false,tDX=0,tDY=0,scale=1,playerHP=MAX_HP;
 
-// ── 对象池 ──────────────────────────────────────────────────
-const poolEnemy = [], poolEnemyBullet = [], poolPlayerBullet = [], poolParticle = [];
+// ── 对象池 ────────────────────────────────────────────────
+const pE=[],pEB=[],pPB=[],pP=[];
+function pg(a,c){return a.length?a.pop():new c()}
+function pp(a,o){if(a.length<300){o.alive=false;a.push(o)}}
 
-function poolGet(arr, ctor) {
-  return arr.length > 0 ? arr.pop() : new ctor();
-}
-function poolPut(arr, obj) {
-  if (arr.length < 200) { obj.alive = false; arr.push(obj); }
-}
+// ── 关卡定义 ──────────────────────────────────────────────
+const STAGES=[
+  {name:'IGNITION',cn:'烈焰初生',elem:FIRE,msg:'🔥 第一关：烈焰初生',enemies:[{t:'grunt',n:6},{t:'aimer',n:2}]},
+  {name:'ABSOLUTE ZERO',cn:'冰封星海',elem:ICE,msg:'❄️ 第二关：冰封星海',enemies:[{t:'grunt',n:4},{t:'spreader',n:3},{t:'rusher',n:2}]},
+  {name:'DUAL ENTROPY',cn:'双生混沌',elem:'mixed',msg:'💥 第三关：双生混沌',enemies:[{t:'grunt',n:3},{t:'aimer',n:2},{t:'spreader',n:3},{t:'rusher',n:2}],boss:true},
+  {name:'OVERLOAD',cn:'电磁风暴',elem:'mixed',msg:'⚡ 第四关：电磁风暴',enemies:[{t:'spreader',n:3},{t:'aimer',n:3},{t:'rusher',n:3},{t:'purple',n:2}],boss:true},
+  {name:'SINGULARITY',cn:'相位撕裂',elem:'mixed',msg:'🌀 第五关：相位撕裂',enemies:[{t:'aimer',n:3},{t:'spreader',n:3},{t:'purple',n:3},{t:'rusher',n:3}],boss:true},
+];
 
-// ── 实体类 ──────────────────────────────────────────────────
-class Player {
-  constructor() {
-    this.x = W/2; this.y = H * 0.78;
-    this.w = 28; this.h = 32;
-    this.elem = FIRE;
-    this.vx = 0; this.vy = 0;
-    this.fireTimer = 0;
-    this.engineFlame = 0;
+// ── 实体类 ────────────────────────────────────────────────
+class Player{
+  constructor(){this.x=W/2;this.y=H*0.78;this.w=28;this.h=32;this.elem=FIRE;this.vx=0;this.vy=0;this.fT=0;this.ef=0}
+  update(){
+    let mx=0,my=0;
+    if(touchOn){mx=tDX*0.8;my=tDY*0.8}
+    if(keys['w']||keys['arrowup'])my-=PSPD;
+    if(keys['s']||keys['arrowdown'])my+=PSPD;
+    if(keys['a']||keys['arrowleft'])mx-=PSPD;
+    if(keys['d']||keys['arrowright'])mx+=PSPD;
+    this.vx+=(mx-this.vx)*0.35;this.vy+=(my-this.vy)*0.35;
+    this.x+=this.vx;this.y+=this.vy;
+    this.x=Math.max(this.w/2,Math.min(W-this.w/2,this.x));
+    this.y=Math.max(this.h/2,Math.min(H-this.h/2,this.y));
+    if(pInv)invTimer--;
+    if(invTimer<=0)pInv=false;
+    if(eLocked){eLockTimer--;if(eLockTimer<=0){eLocked=false;updateElemUI()}}
+    if(ultActive){ultTimer--;if(ultTimer<=0){ultActive=false;ultCharge=0;updateUltUI()}}
+    this.fT++;if(this.fT>=(ultActive?FR*0.4:FR)){this.fT=0;this.shoot()}
+    this.ef+=0.3;
   }
-
-  update() {
-    // 移动
-    let mx = 0, my = 0;
-    if (touchActive) { mx = touchDX * 0.8; my = touchDY * 0.8; }
-    if (keys['w']||keys['arrowup']) my -= PLAYER_SPD;
-    if (keys['s']||keys['arrowdown']) my += PLAYER_SPD;
-    if (keys['a']||keys['arrowleft']) mx -= PLAYER_SPD;
-    if (keys['d']||keys['arrowright']) mx += PLAYER_SPD;
-
-    // 平滑速度
-    this.vx += (mx - this.vx) * 0.35;
-    this.vy += (my - this.vy) * 0.35;
-    this.x += this.vx;
-    this.y += this.vy;
-
-    // 边界限制
-    this.x = Math.max(this.w/2, Math.min(W - this.w/2, this.x));
-    this.y = Math.max(this.h/2, Math.min(H - this.h/2, this.y));
-
-    // 无敌闪烁
-    if (playerInvincible) invincibleTimer--;
-    if (invincibleTimer <= 0) playerInvincible = false;
-
-    // 大招计时
-    if (ultimateActive) {
-      ultimateTimer--;
-      if (ultimateTimer <= 0) { ultimateActive = false; ultimateCharge = 0; updateUltUI(); }
-    }
-
-    // 自动射击
-    this.fireTimer++;
-    if (this.fireTimer >= (ultimateActive ? AUTO_FIRE_RATE * 0.4 : AUTO_FIRE_RATE)) {
-      this.fireTimer = 0;
-      this.shoot();
-    }
-
-    // 引擎火焰动画
-    this.engineFlame += 0.3;
-  }
-
-  shoot() {
-    let b = poolGet(poolPlayerBullet, PlayerBullet);
-    b.init(this.x, this.y - this.h/2, this.elem);
-    playerBullets.push(b);
-    if (ultimateActive) {
-      // 大招期间双翼射击
-      let b2 = poolGet(poolPlayerBullet, PlayerBullet);
-      b2.init(this.x - 12, this.y - this.h/2 + 4, this.elem);
-      playerBullets.push(b2);
-      let b3 = poolGet(poolPlayerBullet, PlayerBullet);
-      b3.init(this.x + 12, this.y - this.h/2 + 4, this.elem);
-      playerBullets.push(b3);
+  shoot(){
+    let b=pg(pPB,PlayerBullet);b.init(this.x,this.y-this.h/2,this.elem);pBullets.push(b);
+    if(ultActive){
+      let b2=pg(pPB,PlayerBullet);b2.init(this.x-12,this.y-this.h/2+4,this.elem);pBullets.push(b2);
+      let b3=pg(pPB,PlayerBullet);b3.init(this.x+12,this.y-this.h/2+4,this.elem);pBullets.push(b3);
     }
   }
-
-  draw(ctx) {
-    if (playerInvincible && Math.floor(frameCount / 3) % 2 === 0) return;
-    let c = ELEM_COLORS[this.elem];
-    ctx.save();
-    ctx.translate(this.x, this.y);
-
-    // 引擎火焰
-    let fl = 5 + Math.sin(this.engineFlame) * 3;
-    ctx.fillStyle = ultimateActive ? '#ffee88' : c.glow;
-    ctx.beginPath();
-    ctx.moveTo(-6, this.h/2);
-    ctx.lineTo(0, this.h/2 + fl + 8);
-    ctx.lineTo(6, this.h/2);
-    ctx.fill();
-    // 内焰
-    ctx.fillStyle = '#fff';
-    ctx.beginPath();
-    ctx.moveTo(-3, this.h/2);
-    ctx.lineTo(0, this.h/2 + fl + 2);
-    ctx.lineTo(3, this.h/2);
-    ctx.fill();
-
-    // 机身
-    let grad = ctx.createLinearGradient(0, -this.h/2, 0, this.h/2);
-    grad.addColorStop(0, c.main); grad.addColorStop(0.5, c.glow); grad.addColorStop(1, c.dark);
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    ctx.moveTo(0, -this.h/2);              // 机头
-    ctx.lineTo(this.w/2, this.h/3);        // 右翼尖
-    ctx.lineTo(this.w/4, this.h/2);        // 右尾
-    ctx.lineTo(-this.w/4, this.h/2);       // 左尾
-    ctx.lineTo(-this.w/2, this.h/3);       // 左翼尖
-    ctx.closePath();
-    ctx.fill();
-
-    // 驾驶舱
-    ctx.fillStyle = ultimateActive ? '#ffe080' : '#ddeeff';
-    ctx.beginPath();
-    ctx.ellipse(0, -4, 5, 8, 0, 0, Math.PI*2);
-    ctx.fill();
-    ctx.fillStyle = '#fff';
-    ctx.beginPath();
-    ctx.ellipse(0, -6, 2, 4, 0, 0, Math.PI*2);
-    ctx.fill();
-
-    // 护盾光环（无敌或大招时）
-    if (playerInvincible || ultimateActive) {
-      ctx.strokeStyle = ultimateActive ? ELEM_COLORS.gold : c.glow;
-      ctx.lineWidth = 2;
-      ctx.globalAlpha = 0.4 + Math.sin(frameCount * 0.2) * 0.3;
-      ctx.beginPath();
-      ctx.arc(0, 0, this.w * 0.8, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.globalAlpha = 1;
-    }
-
-    // 吸收范围指示
-    ctx.strokeStyle = c.glow;
-    ctx.lineWidth = 1;
-    ctx.globalAlpha = 0.25;
-    ctx.beginPath();
-    ctx.arc(0, 0, ABSORB_RANGE, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-
+  draw(ctx){
+    if(pInv&&Math.floor(fc/3)%2===0)return;
+    let c=EC[this.elem];ctx.save();ctx.translate(this.x,this.y);
+    let fl=5+Math.sin(this.ef)*3;
+    ctx.fillStyle=ultActive?'#ffee88':c.g;ctx.beginPath();ctx.moveTo(-6,this.h/2);ctx.lineTo(0,this.h/2+fl+8);ctx.lineTo(6,this.h/2);ctx.fill();
+    ctx.fillStyle='#fff';ctx.beginPath();ctx.moveTo(-3,this.h/2);ctx.lineTo(0,this.h/2+fl+2);ctx.lineTo(3,this.h/2);ctx.fill();
+    let g=ctx.createLinearGradient(0,-this.h/2,0,this.h/2);g.addColorStop(0,c.m);g.addColorStop(0.5,c.g);g.addColorStop(1,c.d);
+    ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(0,-this.h/2);ctx.lineTo(this.w/2,this.h/3);ctx.lineTo(this.w/4,this.h/2);ctx.lineTo(-this.w/4,this.h/2);ctx.lineTo(-this.w/2,this.h/3);ctx.closePath();ctx.fill();
+    ctx.fillStyle=ultActive?'#ffe080':'#ddeeff';ctx.beginPath();ctx.ellipse(0,-4,5,8,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#fff';ctx.beginPath();ctx.ellipse(0,-6,2,4,0,0,Math.PI*2);ctx.fill();
+    if(pInv||ultActive){ctx.strokeStyle=ultActive?EC.gold:c.g;ctx.lineWidth=2;ctx.globalAlpha=0.4+Math.sin(fc*0.2)*0.3;ctx.beginPath();ctx.arc(0,0,this.w*0.8,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;}
+    ctx.strokeStyle=c.g;ctx.lineWidth=1;ctx.globalAlpha=0.2;ctx.beginPath();ctx.arc(0,0,ABSORB_R,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;
     ctx.restore();
   }
-
-  switchElem() {
-    this.elem = this.elem === FIRE ? ICE : FIRE;
-    updateElemUI();
-    // 切换粒子
-    for (let i = 0; i < 12; i++) {
-      let p = poolGet(poolParticle, Particle);
-      p.init(this.x, this.y, ELEM_COLORS[this.elem].particle, 1.5 + Math.random() * 2,
-             Math.random() * Math.PI * 2, 15 + Math.random() * 20);
-      particles.push(p);
-    }
-  }
+  switchElem(){if(eLocked)return;this.elem=this.elem===FIRE?ICE:FIRE;updateElemUI();for(let i=0;i<12;i++){let p=pg(pP,Particle);p.init(this.x,this.y,EC[this.elem].p,1.5+Math.random()*2,Math.random()*Math.PI*2,15+Math.random()*20);particles.push(p)}}
 }
 
-class PlayerBullet {
-  constructor() { this.alive = true; }
-  init(x, y, elem) {
-    this.x = x; this.y = y; this.elem = elem; this.alive = true;
-    this.w = 4; this.h = 12;
-  }
-  update() {
-    this.y -= BULLET_SPD;
-    if (this.y < -20) { this.alive = false; poolPut(poolPlayerBullet, this); }
-  }
-  draw(ctx) {
-    let c = ELEM_COLORS[this.elem];
-    ctx.fillStyle = c.bullet;
-    ctx.shadowColor = c.glow; ctx.shadowBlur = 6;
-    ctx.fillRect(this.x - this.w/2, this.y - this.h/2, this.w, this.h);
-    ctx.shadowBlur = 0;
-  }
+class PlayerBullet{
+  constructor(){this.alive=true}
+  init(x,y,e){this.x=x;this.y=y;this.elem=e;this.alive=true;this.w=4;this.h=12}
+  update(){this.y-=BSPD;if(this.y<-20){this.alive=false;pp(pPB,this)}}
+  draw(ctx){let c=EC[this.elem];ctx.fillStyle=c.b;ctx.shadowColor=c.g;ctx.shadowBlur=6;ctx.fillRect(this.x-this.w/2,this.y-this.h/2,this.w,this.h);ctx.shadowBlur=0}
 }
 
-class Enemy {
-  constructor() { }
-  init(x, y, elem, hp = 1) {
-    this.x = x; this.y = y; this.elem = elem; this.alive = true;
-    this.hp = hp; this.maxHp = hp;
-    this.w = 26; this.h = 26;
-    this.vx = 0; this.vy = 1.2 + Math.random() * 1.5;
-    this.shootTimer = 40 + Math.random() * 80;
-    this.shootInterval = 50 + Math.random() * 100;
-    this.wobble = Math.random() * Math.PI * 2;
-    this.wobbleSpd = 0.02 + Math.random() * 0.04;
+class Enemy{
+  constructor(){this.alive=true}
+  init(x,y,elem,type='grunt',hp=1){
+    this.x=x;this.y=y;this.elem=elem;this.type=type;this.alive=true;this.hp=hp;this.maxHp=hp;
+    this.w=26;this.h=26;this.vy=1.2+Math.random()*1.2;this.vx=0;this.age=0;
+    this.sT=30+Math.random()*60;this.sI=type==='aimer'?35:type==='spreader'?90:60+Math.random()*80;
+    this.wobble=Math.random()*Math.PI*2;this.wS=0.02+Math.random()*0.03;
+    if(type==='rusher'){this.vy=2.5+Math.random()}
+    if(type==='purple'){this.elem=PURPLE}
   }
-  update() {
-    this.y += this.vy;
-    this.wobble += this.wobbleSpd;
-    this.x += Math.sin(this.wobble) * 1.2;
-    // 边界反弹
-    if (this.x < this.w/2) { this.x = this.w/2; this.vx *= -1; }
-    if (this.x > W - this.w/2) { this.x = W - this.w/2; this.vx *= -1; }
-
-    this.shootTimer--;
-    if (this.shootTimer <= 0) {
-      this.shootTimer = this.shootInterval;
-      this.shoot();
+  update(){
+    this.age++;this.y+=this.vy;this.wobble+=this.wS;
+    if(this.type==='aimer'){this.x+=Math.sin(this.wobble)*0.6}
+    else if(this.type==='spreader'){this.x+=Math.sin(this.wobble)*1.5}
+    else{this.x+=Math.sin(this.wobble)*1.2}
+    if(this.x<this.w/2){this.x=this.w/2}
+    if(this.x>W-this.w/2){this.x=W-this.w/2}
+    this.sT--;if(this.sT<=0){this.sT=this.sI;this.shoot()}
+    if(this.y>H+40){this.alive=false;pp(pE,this)}
+  }
+  shoot(){
+    if(this.type==='spreader'){
+      for(let a=-15;a<=15;a+=15){
+        let b=pg(pEB,EnemyBullet);b.init(this.x,this.y+this.h/2,this.elem,EBSPD,'straight',90+a);
+        eBullets.push(b);
+      }
+      return;
     }
-    if (this.y > H + 40) { this.alive = false; poolPut(poolEnemy, this); }
+    if(this.type==='aimer'&&player){
+      let dx=player.x-this.x,dy=player.y-this.y,ang=Math.atan2(dy,dx)*180/Math.PI;
+      let b=pg(pEB,EnemyBullet);b.init(this.x,this.y+this.h/2,this.elem,EBSPD*1.3,'straight',ang);
+      eBullets.push(b);
+      return;
+    }
+    if(this.type==='purple'){
+      let b=pg(pEB,EnemyBullet);b.init(this.x,this.y+this.h/2,PURPLE,EBSPD*0.8,'straight',90);
+      eBullets.push(b);
+      return;
+    }
+    let b=pg(pEB,EnemyBullet);b.init(this.x,this.y+this.h/2,this.elem,EBSPD,'straight',90);
+    eBullets.push(b);
   }
-  shoot() {
-    let b = poolGet(poolEnemyBullet, EnemyBullet);
-    b.init(this.x, this.y + this.h/2, this.elem);
-    enemyBullets.push(b);
-  }
-  draw(ctx) {
-    let c = ELEM_COLORS[this.elem === FIRE ? 'enemyF' : 'enemyI'];
-    ctx.save();
-    ctx.translate(this.x, this.y);
-    // 机身
-    ctx.fillStyle = c;
-    ctx.beginPath();
-    ctx.moveTo(0, this.h/2);   // 下尖
-    ctx.lineTo(this.w/2, -this.h/3);
-    ctx.lineTo(0, -this.h/2);   // 上尖
-    ctx.lineTo(-this.w/2, -this.h/3);
-    ctx.closePath();
-    ctx.fill();
-    // 核心
-    ctx.fillStyle = '#fff';
-    ctx.beginPath();
-    ctx.arc(0, 0, 5, 0, Math.PI*2);
-    ctx.fill();
-    // 属性标记
-    ctx.fillStyle = this.elem === FIRE ? '#ff4422' : '#2266ff';
-    ctx.beginPath();
-    ctx.arc(0, 0, 3, 0, Math.PI*2);
-    ctx.fill();
+  draw(ctx){
+    let c=this.elem===PURPLE?EC.purple.m:EC[this.elem===FIRE?'enemyF':'enemyI'];
+    if(this.type==='purple')c=EC.purple.m;
+    ctx.save();ctx.translate(this.x,this.y);
+    ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(0,this.h/2);ctx.lineTo(this.w/2,-this.h/3);ctx.lineTo(0,-this.h/2);ctx.lineTo(-this.w/2,-this.h/3);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(0,0,5,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=this.elem===PURPLE?EC.purple.m:(this.elem===FIRE?'#ff4422':'#2266ff');ctx.beginPath();ctx.arc(0,0,3,0,Math.PI*2);ctx.fill();
     ctx.restore();
+    if(this.maxHp>1){ctx.fillStyle='rgba(255,255,255,0.2)';ctx.fillRect(this.x-12,this.y-this.h/2-8,24,3);ctx.fillStyle=this.elem===FIRE?'#ff6644':this.elem===PURPLE?EC.purple.m:'#4488ff';ctx.fillRect(this.x-12,this.y-this.h/2-8,24*(this.hp/this.maxHp),3)}
+    // 紫电磁场特效
+    if(this.type==='purple'){ctx.strokeStyle=EC.purple.g;ctx.lineWidth=1;ctx.globalAlpha=0.4+Math.sin(fc*0.15)*0.3;ctx.beginPath();ctx.arc(this.x,this.y,this.w*1.2,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1}
+  }
+}
 
-    // 血条
-    if (this.maxHp > 1) {
-      ctx.fillStyle = 'rgba(255,255,255,0.2)';
-      ctx.fillRect(this.x - 12, this.y - this.h/2 - 8, 24, 3);
-      ctx.fillStyle = this.elem === FIRE ? '#ff6644' : '#4488ff';
-      ctx.fillRect(this.x - 12, this.y - this.h/2 - 8, 24 * (this.hp/this.maxHp), 3);
+class Boss{
+  constructor(){this.alive=true}
+  init(x,y,elem,stage){
+    this.x=x;this.y=y;this.elem=elem;this.stage=stage;this.alive=true;
+    this.w=64;this.h=56;this.hp=15+stage*10;this.maxHp=this.hp;
+    this.phase=1;this.vy=0.8;this.vx=0.5;this.age=0;this.sT=20;this.entered=false;
+    this.pattern=0;this.pTimer=0;
+  }
+  update(){
+    this.age++;
+    if(!this.entered){this.y+=1.5;if(this.y>=100){this.entered=true;this.vy=0.8;this.vx=0.5}return}
+    if(this.y<60)this.y=60;
+    this.x+=Math.sin(this.age*0.02)*this.vx;this.y+=Math.cos(this.age*0.03)*this.vy;
+    if(this.x<this.w/2+20||this.x>W-this.w/2-20)this.vx*=-1;
+    if(this.y<60||this.y>H*0.4)this.vy*=-1;
+    this.sT--;this.pTimer--;
+    // 阶段变化
+    let hpPct=this.hp/this.maxHp;
+    if(hpPct<0.3)this.phase=3;
+    else if(hpPct<0.6)this.phase=2;
+    if(this.sT<=0){
+      this.sT=this.phase===3?12:this.phase===2?20:30;
+      this.pattern=(this.pattern+1)%3;
+      this.bossShoot();
     }
   }
-}
-
-class EnemyBullet {
-  constructor() { this.alive = true; }
-  init(x, y, elem) {
-    this.x = x; this.y = y; this.elem = elem; this.alive = true;
-    this.r = 5; this.vy = ENEMY_BULLET_SPD;
-  }
-  update() {
-    this.y += this.vy;
-    if (this.y > H + 20 || this.y < -20 || this.x < -20 || this.x > W + 20) {
-      this.alive = false; poolPut(poolEnemyBullet, this);
+  bossShoot(){
+    let n=this.phase===3?18:this.phase===2?12:8;
+    let spd=EBSPD*(this.phase===3?1.4:1);
+    let ang0=this.age*2;
+    for(let i=0;i<n;i++){
+      let ang=ang0+i*(360/n);
+      let b=pg(pEB,EnemyBullet);b.init(this.x,this.y,this.stage>=4&&i%3===0?PURPLE:this.elem,spd,'straight',ang);
+      eBullets.push(b);
+    }
+    // 扇形弹幕
+    if(this.phase>=2){
+      let dx=player?player.x-this.x:0,dy=player?player.y-this.y:100;
+      let aim=Math.atan2(dy,dx)*180/Math.PI;
+      for(let a=-20;a<=20;a+=10){
+        let b=pg(pEB,EnemyBullet);b.init(this.x,this.y,this.elem,EBSPD*1.2,'straight',aim+a);
+        eBullets.push(b);
+      }
     }
   }
-  draw(ctx) {
-    let c = ELEM_COLORS[this.elem === FIRE ? 'enemyF' : 'enemyI'];
-    ctx.fillStyle = c;
-    ctx.shadowColor = c; ctx.shadowBlur = 5;
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
-    ctx.fill();
-    ctx.fillStyle = 'rgba(255,255,255,0.6)';
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.r * 0.4, 0, Math.PI*2);
-    ctx.fill();
-    ctx.shadowBlur = 0;
+  draw(ctx){
+    let c=EC[this.elem===FIRE?'enemyF':'enemyI'];
+    if(this.elem===PURPLE)c=EC.purple.m;
+    ctx.save();ctx.translate(this.x,this.y);
+    // Boss 机身
+    let g=ctx.createRadialGradient(0,0,10,0,0,this.w/2);
+    g.addColorStop(0,'#fff');g.addColorStop(0.3,c);g.addColorStop(1,'#000');
+    ctx.fillStyle=g;ctx.beginPath();
+    ctx.moveTo(0,-this.h/2);ctx.lineTo(this.w/2,-this.h/4);ctx.lineTo(this.w/2+4,0);ctx.lineTo(this.w/2,this.h/4);ctx.lineTo(0,this.h/2);ctx.lineTo(-this.w/2,this.h/4);ctx.lineTo(-this.w/2-4,0);ctx.lineTo(-this.w/2,-this.h/4);
+    ctx.closePath();ctx.fill();
+    // 眼睛
+    ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(-10,-6,10,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(10,-6,10,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#000';ctx.beginPath();ctx.arc(-10,-6,5,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(10,-6,5,0,Math.PI*2);ctx.fill();
+    // 阶段光环
+    let ringC=this.phase===3?'#ff0000':this.phase===2?'#ff8800':EC.gold;
+    ctx.strokeStyle=ringC;ctx.lineWidth=3;ctx.globalAlpha=0.5+Math.sin(fc*0.1)*0.3;
+    ctx.beginPath();ctx.arc(0,0,this.w*0.7,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;
+    ctx.restore();
+    // Boss 血条
+    let bw=W*0.7,bh=8,bx=(W-bw)/2,by=16;
+    ctx.fillStyle='rgba(0,0,0,0.6)';ctx.fillRect(bx-2,by-2,bw+4,bh+4);
+    ctx.fillStyle='rgba(255,255,255,0.15)';ctx.fillRect(bx,by,bw,bh);
+    let hc=this.hp/this.maxHp>0.3?'#ff4444':'#ff0000';
+    ctx.fillStyle=hc;ctx.fillRect(bx,by,bw*(this.hp/this.maxHp),bh);
+    ctx.fillStyle='#fff';ctx.font='9px monospace';ctx.textAlign='center';
+    ctx.fillText(`BOSS  ${'★'.repeat(this.phase)}${'☆'.repeat(3-this.phase)}  ${Math.ceil(this.hp/this.maxHp*100)}%`,W/2,by-4);
   }
 }
 
-class Particle {
-  constructor() { this.alive = true; }
-  init(x, y, color, speed, angle, life) {
-    this.x = x; this.y = y; this.color = color; this.alive = true;
-    this.vx = Math.cos(angle) * speed;
-    this.vy = Math.sin(angle) * speed;
-    this.life = life; this.maxLife = life;
+class EnemyBullet{
+  constructor(){this.alive=true}
+  init(x,y,elem,speed=EBSPD,pattern='straight',angle=90){
+    this.x=x;this.y=y;this.elem=elem;this.alive=true;this.r=elem===PURPLE?6:5;
+    this.speed=speed;this.pattern=pattern;this.angle=angle*Math.PI/180;this.age=0;
+    this.ox=x;this.oy=y;
   }
-  update() {
-    this.x += this.vx; this.y += this.vy;
-    this.vx *= 0.97; this.vy *= 0.97;
-    this.life--;
-    if (this.life <= 0) { this.alive = false; poolPut(poolParticle, this); }
+  update(){
+    this.age++;
+    let rad=this.angle;
+    if(this.pattern==='spiral'){rad+=Math.sin(this.age*0.1)*0.5}
+    this.vx=Math.cos(rad)*this.speed;
+    this.vy=Math.sin(rad)*this.speed;
+    this.x+=this.vx;this.y+=this.vy;
+    // 紫电弹幕轻微追踪
+    if(this.elem===PURPLE&&player&&this.age>10&&this.age<80){
+      let dx=player.x-this.x,dy=player.y-this.y,da=Math.atan2(dy,dx);
+      this.angle+=(da-this.angle)*0.01;
+    }
+    if(this.y>H+30||this.y<-30||this.x<-30||this.x>W+30){this.alive=false;pp(pEB,this)}
   }
-  draw(ctx) {
-    let alpha = this.life / this.maxLife;
-    ctx.fillStyle = this.color;
-    ctx.globalAlpha = alpha;
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, 2 * alpha, 0, Math.PI*2);
-    ctx.fill();
-    ctx.globalAlpha = 1;
-  }
-}
-
-// ── 星空背景 ────────────────────────────────────────────────
-let stars = [];
-function initStars() {
-  stars = [];
-  for (let i = 0; i < 120; i++) {
-    stars.push({ x: Math.random()*W, y: Math.random()*H, spd: 0.3 + Math.random() * 1.2,
-                 r: 0.5 + Math.random() * 1.5, a: 0.3 + Math.random() * 0.7 });
-  }
-}
-
-function drawStars(ctx) {
-  for (let s of stars) {
-    s.y += s.spd;
-    if (s.y > H) { s.y = 0; s.x = Math.random() * W; }
-    ctx.fillStyle = `rgba(255,255,255,${s.a})`;
-    ctx.beginPath();
-    ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
-    ctx.fill();
+  draw(ctx){
+    let c=this.elem===PURPLE?EC.purple:EC[this.elem===FIRE?'enemyF':'enemyI'];
+    ctx.fillStyle=this.elem===PURPLE?EC.purple.m:c;
+    ctx.shadowColor=this.elem===PURPLE?EC.purple.g:c;
+    ctx.shadowBlur=this.elem===PURPLE?8:5;
+    ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,0.6)';ctx.beginPath();ctx.arc(this.x,this.y,this.r*0.4,0,Math.PI*2);ctx.fill();
+    // 紫电拖尾
+    if(this.elem===PURPLE){
+      ctx.fillStyle=EC.purple.g;ctx.globalAlpha=0.3;
+      ctx.beginPath();ctx.arc(this.x-this.vx*0.6,this.y-this.vy*0.6,this.r*0.7,0,Math.PI*2);ctx.fill();
+      ctx.globalAlpha=1;
+    }
+    ctx.shadowBlur=0;
   }
 }
 
-// ── 游戏逻辑 ────────────────────────────────────────────────
-function initGame() {
-  player = new Player();
-  enemies = []; enemyBullets = []; playerBullets = []; particles = [];
-  score = 0; wave = 1; waveTimer = 0; enemySpawnTimer = 0; frameCount = 0;
-  ultimateCharge = 0; ultimateActive = false; ultimateTimer = 0;
-  playerInvincible = false; invincibleTimer = 0;
-  gameRunning = true; gameOver = false;
-  initStars();
-  spawnWave();
+class Particle{
+  constructor(){this.alive=true}
+  init(x,y,color,speed,angle,life){this.x=x;this.y=y;this.color=color;this.alive=true;this.vx=Math.cos(angle)*speed;this.vy=Math.sin(angle)*speed;this.life=life;this.ml=life}
+  update(){this.x+=this.vx;this.y+=this.vy;this.vx*=0.97;this.vy*=0.97;this.life--;if(this.life<=0){this.alive=false;pp(pP,this)}}
+  draw(ctx){let a=this.life/this.ml;ctx.fillStyle=this.color;ctx.globalAlpha=a;ctx.beginPath();ctx.arc(this.x,this.y,2*a,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1}
+}
+
+// ── 星空 ──────────────────────────────────────────────────
+let stars=[];
+function iStars(){stars=[];for(let i=0;i<150;i++)stars.push({x:Math.random()*W,y:Math.random()*H,s:0.3+Math.random()*1.5,r:0.5+Math.random()*1.5,a:0.3+Math.random()*0.7})}
+function dStars(ctx){for(let s of stars){s.y+=s.s;if(s.y>H){s.y=0;s.x=Math.random()*W}ctx.fillStyle=`rgba(255,255,255,${s.a})`;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill()}}
+
+// ── 游戏逻辑 ──────────────────────────────────────────────
+function initGame(){
+  player=new Player();enemies=[];eBullets=[];pBullets=[];particles=[];
+  score=0;stage=1;stageTimer=0;eSpawnT=0;fc=0;
+  ultCharge=0;ultActive=false;ultTimer=0;pInv=false;invTimer=0;
+  gameRunning=true;gameOver=false;bossAlive=false;bossRef=null;
+  eLocked=false;eLockTimer=0;playerHP=MAX_HP;
+  iStars();spawnStage();updateHUD();
+}
+
+function spawnStage(){
+  let sd=STAGES[(stage-1)%STAGES.length];
+  let eList=sd.enemies||[];
+  bossAlive=false;bossRef=null;
+  let elem=sd.elem==='mixed'?(Math.random()>0.5?FIRE:ICE):sd.elem;
+  let totalN=0;
+  for(let eg of eList){
+    let n=eg.n+Math.floor((stage-1)/5)*2; // NG+ 加成
+    for(let i=0;i<n;i++){
+      let e=pg(pE,Enemy);e.init(40+Math.random()*(W-80),-40-Math.random()*400,elem==='mixed'?(Math.random()>0.5?FIRE:ICE):elem,eg.t,stage>2?2:1);
+      enemies.push(e);totalN++;
+    }
+  }
+  if(sd.boss&&stage>=3){
+    // Boss 在所有小兵被清完后出现
+    bossAlive=false;bossRef=null;
+  }
+  showMsg(sd.msg||`STAGE ${stage}`);
   updateHUD();
 }
 
-function spawnWave() {
-  let n = 4 + wave * 3;
-  let elem = wave % 2 === 1 ? FIRE : ICE; // 奇数关火，偶数关冰
-  for (let i = 0; i < n; i++) {
-    let e = poolGet(poolEnemy, Enemy);
-    e.init(40 + Math.random() * (W - 80), -40 - Math.random() * 300, elem, wave > 2 ? 2 : 1);
-    enemies.push(e);
-  }
-  showMsg(elem === FIRE ? '🔥 第一关：烈焰初生' : '❄️ 第二关：冰封星海');
-  updateHUD();
+function spawnBoss(){
+  let elem=stage%2===1?FIRE:ICE;
+  if(stage>=4&&Math.random()>0.5)elem=PURPLE;
+  let b=pg(pE,Boss);b.init(W/2,-80,elem,stage);
+  b.type='boss';
+  enemies.push(b);bossAlive=true;bossRef=b;
+  showMsg('⚠️  BOSS 来袭！');
 }
 
-function showMsg(text) {
-  let el = document.getElementById('msg');
-  el.textContent = text;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2200);
+function showMsg(t){
+  let el=document.getElementById('msg');el.textContent=t;el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2500);
 }
 
-function update() {
-  if (!gameRunning) return;
-  frameCount++;
-
-  // 更新实体
+function update(){
+  if(!gameRunning)return;fc++;
   player.update();
-
-  for (let e of enemies) e.update();
-  for (let b of enemyBullets) b.update();
-  for (let b of playerBullets) b.update();
-  for (let p of particles) p.update();
-
-  // 清理死实体
-  enemies = enemies.filter(e => e.alive);
-  enemyBullets = enemyBullets.filter(b => b.alive);
-  playerBullets = playerBullets.filter(b => b.alive);
-  particles = particles.filter(p => p.alive);
-
-  // 碰撞检测
+  for(let e of enemies)e.update();
+  for(let b of eBullets)b.update();
+  for(let b of pBullets)b.update();
+  for(let p of particles)p.update();
+  enemies=enemies.filter(e=>e.alive);
+  eBullets=eBullets.filter(b=>b.alive);
+  pBullets=pBullets.filter(b=>b.alive);
+  particles=particles.filter(p=>p.alive);
   checkCollisions();
-
-  // 敌人刷新
-  enemySpawnTimer++;
-  if (enemySpawnTimer >= ENEMY_SPAWN_RATE && enemies.length < 8 + wave * 2) {
-    enemySpawnTimer = 0;
-    let elem = wave % 2 === 1 ? FIRE : ICE;
-    if (wave >= 3) elem = Math.random() > 0.5 ? FIRE : ICE; // 混合
-    let e = poolGet(poolEnemy, Enemy);
-    e.init(40 + Math.random() * (W - 80), -30, elem, wave > 2 ? 2 : 1);
+  // Boss检测
+  if(bossRef&&!bossRef.alive){bossAlive=false;bossRef=null}
+  // 敌人生成
+  eSpawnT++;
+  let maxE=8+stage*2;if(bossAlive)maxE=4;
+  if(eSpawnT>=Math.max(30,ENEMY_SPAWN_RATE-stage*3)&&enemies.filter(e=>e.type!=='boss').length<maxE&&!bossAlive){
+    eSpawnT=0;
+    let s=STAGES[(stage-1)%STAGES.length];let elem=s.elem==='mixed'?(Math.random()>0.5?FIRE:ICE):s.elem;
+    let types=['grunt','grunt','grunt','aimer','spreader'];if(stage>=4)types.push('purple');
+    let t=types[Math.floor(Math.random()*types.length)];
+    let e=pg(pE,Enemy);e.init(40+Math.random()*(W-80),-30,elem,t,stage>2?2:1);
     enemies.push(e);
   }
-
-  // 波次检查
-  if (enemies.length === 0) {
-    waveTimer++;
-    if (waveTimer > 120) {
-      waveTimer = 0;
-      wave++;
-      spawnWave();
+  // 波次完成
+  if(enemies.length===0&&!bossAlive){
+    stageTimer++;
+    if(stageTimer>90){
+      stageTimer=0;
+      let s=STAGES[(stage-1)%STAGES.length];
+      if(s.boss&&!bossAlive&&stage>=3&&stageTimer===0){
+        // 先检查是否需要出boss
+      }
+      stage++;
+      spawnStage();
     }
+  }
+  // 检查是否需要出Boss
+  if(!bossAlive&&enemies.filter(e=>e.type!=='boss').length===0&&stageTimer===0){
+    let s=STAGES[(stage-1)%STAGES.length];
+    if(s.boss&&stage>=3&&enemies.length===0){
+      stageTimer=31; // 短暂延迟后出boss
+    }
+  }
+  if(stageTimer===31&&!bossAlive&&enemies.length===0){
+    spawnBoss();
   }
 }
 
-function checkCollisions() {
+function checkCollisions(){
   // 玩家子弹 vs 敌人
-  for (let b of playerBullets) {
-    if (!b.alive) continue;
-    for (let e of enemies) {
-      if (!e.alive) continue;
-      if (Math.abs(b.x - e.x) < e.w/2 && Math.abs(b.y - e.y) < e.h/2) {
-        b.alive = false; poolPut(poolPlayerBullet, b);
-        let dmg = (b.elem === e.elem) ? 2 : 1; // 同色双倍伤害
-        e.hp -= dmg;
-        if (e.hp <= 0) {
-          e.alive = false; poolPut(poolEnemy, e);
-          score += 100 * wave + (b.elem === e.elem ? 50 : 0);
-          // 爆炸粒子
-          for (let i = 0; i < 10; i++) {
-            let p = poolGet(poolParticle, Particle);
-            p.init(e.x, e.y, ELEM_COLORS[e.elem === FIRE ? 'enemyF' : 'enemyI'], 1+Math.random()*3, Math.random()*Math.PI*2, 12+Math.random()*15);
-            particles.push(p);
-          }
+  for(let b of pBullets){if(!b.alive)continue;
+    for(let e of enemies){if(!e.alive)continue;
+      if(Math.abs(b.x-e.x)<e.w/2+2&&Math.abs(b.y-e.y)<e.h/2+2){
+        b.alive=false;pp(pPB,b);
+        let dmg=(b.elem===e.elem||e.elem===PURPLE)?2:1;
+        if(b.elem===PURPLE)dmg=1;
+        e.hp-=dmg;
+        if(e.hp<=0){
+          e.alive=false;
+          if(e.type==='boss'){bossAlive=false;bossRef=null;score+=stage*2000;
+            for(let i=0;i<40;i++){let p=pg(pP,Particle);p.init(e.x,e.y,EC.gold,2+Math.random()*5,Math.random()*Math.PI*2,20+Math.random()*30);particles.push(p)}
+            showMsg('🏆 BOSS 击破！');
+          }else{pp(pE,e);score+=100*stage+(b.elem===e.elem?50:0)}
+          for(let i=0;i<10;i++){let p=pg(pP,Particle);p.init(e.x,e.y,EC[e.elem===FIRE?'enemyF':e.elem===PURPLE?e.elem:'enemyI'],1+Math.random()*3,Math.random()*Math.PI*2,12+Math.random()*15);particles.push(p)}
         }
         break;
       }
     }
   }
-
   // 敌人子弹 vs 玩家
-  for (let b of enemyBullets) {
-    if (!b.alive) continue;
-    let dx = b.x - player.x, dy = b.y - player.y;
-    let dist = Math.sqrt(dx*dx + dy*dy);
-
-    // 同色吸收
-    if (b.elem === player.elem && dist < ABSORB_RANGE) {
-      b.alive = false; poolPut(poolEnemyBullet, b);
-      ultimateCharge = Math.min(100, ultimateCharge + ULT_CHARGE_PER_BULLET);
-      updateUltUI();
-      // 吸收粒子
-      for (let i = 0; i < 3; i++) {
-        let p = poolGet(poolParticle, Particle);
-        p.init(b.x, b.y, ELEM_COLORS[player.elem].particle, 0.5+Math.random(), Math.atan2(-dy, -dx)+Math.random()*0.5-0.25, 8+Math.random()*10);
-        particles.push(p);
+  for(let b of eBullets){if(!b.alive)continue;
+    let dx=b.x-player.x,dy=b.y-player.y,dist=Math.sqrt(dx*dx+dy*dy);
+    // 紫电：无法吸收，击中封印切换
+    if(b.elem===PURPLE){
+      if(dist<player.w*0.55&&!pInv&&!ultActive){
+        b.alive=false;pp(pEB,b);eLocked=true;eLockTimer=180;
+        updateElemUI();damagePlayer();
+        for(let i=0;i<8;i++){let p=pg(pP,Particle);p.init(b.x,b.y,EC.purple.p,1+Math.random()*2,Math.random()*Math.PI*2,10+Math.random()*12);particles.push(p)}
       }
       continue;
     }
-
+    // 同色吸收
+    if(b.elem===player.elem&&dist<ABSORB_R){
+      b.alive=false;pp(pEB,b);ultCharge=Math.min(100,ultCharge+ULT_PB);updateUltUI();
+      for(let i=0;i<3;i++){let p=pg(pP,Particle);p.init(b.x,b.y,EC[player.elem].p,0.5+Math.random(),Math.atan2(-dy,-dx)+Math.random()*0.5-0.25,8+Math.random()*10);particles.push(p)}
+      continue;
+    }
     // 异色碰撞
-    if (dist < player.w * 0.55 && !playerInvincible && !ultimateActive) {
-      b.alive = false; poolPut(poolEnemyBullet, b);
+    if(dist<player.w*0.55&&!pInv&&!ultActive){b.alive=false;pp(pEB,b);damagePlayer()}
+  }
+  // 敌机碰撞
+  if(!pInv&&!ultActive){for(let e of enemies){if(!e.alive)continue;
+    if(Math.abs(player.x-e.x)<(player.w+e.w)/2*0.7&&Math.abs(player.y-e.y)<(player.h+e.h)/2*0.7){
+      let dmgAmt=e.type==='boss'?3:1;e.hp-=dmgAmt;
+      if(e.hp<=0){e.alive=false;if(e.type==='boss'){bossAlive=false;bossRef=null;score+=stage*1000;showMsg('🏆 BOSS 击破！')}else pp(pE,e)}
       damagePlayer();
+      for(let i=0;i<15;i++){let p=pg(pP,Particle);p.init(e.x,e.y,EC.white,2+Math.random()*3,Math.random()*Math.PI*2,10+Math.random()*15);particles.push(p)}
+      break;
     }
-  }
-
-  // 敌人机身碰撞
-  if (!playerInvincible && !ultimateActive) {
-    for (let e of enemies) {
-      if (!e.alive) continue;
-      if (Math.abs(player.x - e.x) < (player.w + e.w)/2 * 0.7 &&
-          Math.abs(player.y - e.y) < (player.h + e.h)/2 * 0.7) {
-        e.alive = false; poolPut(poolEnemy, e);
-        damagePlayer();
-        for (let i = 0; i < 8; i++) {
-          let p = poolGet(poolParticle, Particle);
-          p.init(e.x, e.y, ELEM_COLORS[e.elem === FIRE ? 'enemyF' : 'enemyI'], 1+Math.random()*2.5, Math.random()*Math.PI*2, 10+Math.random()*12);
-          particles.push(p);
-        }
-        break;
-      }
-    }
-  }
+  }}
 }
 
-let playerHP = MAX_HP;
-function damagePlayer() {
-  playerHP--;
-  playerInvincible = true;
-  invincibleTimer = INVINCIBILITY_FRAMES;
-  // 受击粒子
-  for (let i = 0; i < 15; i++) {
-    let p = poolGet(poolParticle, Particle);
-    p.init(player.x, player.y, '#ffffff', 2+Math.random()*3, Math.random()*Math.PI*2, 10+Math.random()*15);
-    particles.push(p);
-  }
-  updateHUD();
-  if (playerHP <= 0) endGame();
+function damagePlayer(){
+  playerHP--;pInv=true;invTimer=IFRAMES;
+  for(let i=0;i<15;i++){let p=pg(pP,Particle);p.init(player.x,player.y,EC.white,2+Math.random()*3,Math.random()*Math.PI*2,10+Math.random()*15);particles.push(p)}
+  updateHUD();if(playerHP<=0)endGame();
 }
 
-function activateUltimate() {
-  if (ultimateCharge < 100 || ultimateActive) return;
-  ultimateActive = true;
-  ultimateTimer = ULT_DURATION;
-  ultimateCharge = 0;
-  // 清空异色弹幕
-  enemyBullets = enemyBullets.filter(b => {
-    if (b.elem !== player.elem) { b.alive = false; poolPut(poolEnemyBullet, b); return false; }
-    return true;
-  });
-  // 效果粒子
-  for (let i = 0; i < 30; i++) {
-    let p = poolGet(poolParticle, Particle);
-    let a = Math.random() * Math.PI * 2;
-    p.init(player.x, player.y, ELEM_COLORS[player.elem].glow, 3+Math.random()*4, a, 20+Math.random()*30);
-    particles.push(p);
-  }
-  updateUltUI();
-  showMsg('⚡ 星核共鸣！');
+function activateUltimate(){
+  if(ultCharge<100||ultActive)return;ultActive=true;ultTimer=ULT_DUR;ultCharge=0;
+  eBullets=eBullets.filter(b=>{if(b.elem!==player.elem&&b.elem!==PURPLE){b.alive=false;pp(pEB,b);return false}return true});
+  for(let i=0;i<30;i++){let p=pg(pP,Particle);let a=Math.random()*Math.PI*2;p.init(player.x,player.y,EC[player.elem].g,3+Math.random()*4,a,20+Math.random()*30);particles.push(p)}
+  updateUltUI();showMsg('⚡ 星核共鸣！');
 }
 
-function endGame() {
-  gameRunning = false; gameOver = true;
-  document.getElementById('final-score').textContent = `最终得分: ${score}`;
+function endGame(){
+  gameRunning=false;gameOver=true;
+  document.getElementById('final-score').textContent=`最终得分: ${score}`;
+  document.getElementById('final-stage').textContent=`到达: 第 ${stage} 关`;
   document.getElementById('gameover').classList.add('show');
 }
 
-function restartGame() {
+function restartGame(){
   document.getElementById('gameover').classList.remove('show');
-  // 清理
-  for (let e of enemies) { e.alive = false; poolPut(poolEnemy, e); }
-  for (let b of enemyBullets) { b.alive = false; poolPut(poolEnemyBullet, b); }
-  for (let b of playerBullets) { b.alive = false; poolPut(poolPlayerBullet, b); }
-  for (let p of particles) { p.alive = false; poolPut(poolParticle, p); }
-  playerHP = MAX_HP;
-  initGame();
+  for(let e of enemies){e.alive=false;pp(pE,e)}
+  for(let b of eBullets){b.alive=false;pp(pEB,b)}
+  for(let b of pBullets){b.alive=false;pp(pPB,b)}
+  for(let p of particles){p.alive=false;pp(pP,p)}
+  playerHP=MAX_HP;initGame();
 }
 
-// ── 渲染 ────────────────────────────────────────────────────
-function render() {
-  ctx.clearRect(0, 0, W, H);
-
-  // 星空背景
-  drawStars(ctx);
-
-  // 实体
-  for (let b of playerBullets) b.draw(ctx);
-  for (let b of enemyBullets) b.draw(ctx);
-  for (let e of enemies) e.draw(ctx);
+// ── 渲染 ──────────────────────────────────────────────────
+function render(){
+  ctx.clearRect(0,0,W,H);dStars(ctx);
+  for(let b of pBullets)b.draw(ctx);
+  for(let b of eBullets)b.draw(ctx);
+  for(let e of enemies)e.draw(ctx);
   player.draw(ctx);
-  for (let p of particles) p.draw(ctx);
+  for(let p of particles)p.draw(ctx);
 }
 
-// ── UI 更新 ─────────────────────────────────────────────────
-function updateHUD() {
-  document.getElementById('hud-score').textContent = `🏆 ${score}`;
-  document.getElementById('hud-wave').innerHTML = `WAVE ${wave}<br><span class="hud-label">${wave%2===1?'🔥 烈焰':'❄️ 冰霜'}${wave>=3?' · 混沌':''}</span>`;
+// ── UI ────────────────────────────────────────────────────
+function updateHUD(){
+  document.getElementById('hud-score').textContent=`🏆 ${score}`;
+  let s=STAGES[(stage-1)%STAGES.length];
+  document.getElementById('hud-stage').innerHTML=`STAGE ${stage}<br><span class="hud-label">${s?stage<=5?s.cn:('NG+'+(Math.floor((stage-1)/5)+1)+' '+s.cn):'???'}</span>`;
+  let h='';for(let i=0;i<MAX_HP;i++)h+=i<playerHP?'❤️':'🖤';
+  document.getElementById('hud-hp').innerHTML=h;
+}
+function updateUltUI(){
+  let b=document.getElementById('ultimate-bar-fill');b.style.width=ultCharge+'%';
+  if(ultCharge>=100){b.classList.add('ready');document.getElementById('btn-ult').classList.add('show')}
+  else{b.classList.remove('ready');document.getElementById('btn-ult').classList.remove('show')}
+}
+function updateElemUI(){
+  let ind=document.getElementById('elem-indicator');
+  ind.className=eLocked?'locked':player.elem;
+  document.getElementById('btn-fire').classList.toggle('active',player.elem===FIRE&&!eLocked);
+  document.getElementById('btn-ice').classList.toggle('active',player.elem===ICE&&!eLocked);
 }
 
-function updateUltUI() {
-  let bar = document.getElementById('ultimate-bar-fill');
-  bar.style.width = ultimateCharge + '%';
-  if (ultimateCharge >= 100) {
-    bar.classList.add('ready');
-    document.getElementById('btn-ult').classList.add('show');
-  } else {
-    bar.classList.remove('ready');
-    document.getElementById('btn-ult').classList.remove('show');
-  }
+// ── 输入 ──────────────────────────────────────────────────
+function initInput(){
+  window.addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if(e.key===' '||e.key==='j'){player.switchElem();e.preventDefault()}if(e.key==='k'||e.key==='shift'){activateUltimate();e.preventDefault()}});
+  window.addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false});
+  cv.addEventListener('touchstart',e=>{e.preventDefault();for(let t of e.changedTouches)touches[t.identifier]={sx:t.clientX,sy:t.clientY,cx:t.clientX,cy:t.clientY};if(e.touches.length===1)touchOn=true},{passive:false});
+  cv.addEventListener('touchmove',e=>{e.preventDefault();for(let t of e.changedTouches){if(touches[t.identifier]){touches[t.identifier].cx=t.clientX;touches[t.identifier].cy=t.clientY;if(e.touches.length===1){tDX=(t.clientX-touches[t.identifier].sx)/scale;tDY=(t.clientY-touches[t.identifier].sy)/scale}}}},{passive:false});
+  cv.addEventListener('touchend',e=>{for(let t of e.changedTouches){let T=touches[t.identifier];if(T){let dx=T.cx-T.sx,dy=T.cy-T.sy;if(Math.abs(dx)<10&&Math.abs(dy)<10)player.switchElem();delete touches[t.identifier]}}if(Object.keys(touches).length===0){touchOn=false;tDX=0;tDY=0}});
+  document.getElementById('btn-fire').addEventListener('click',()=>{if(player.elem!==FIRE)player.switchElem()});
+  document.getElementById('btn-ice').addEventListener('click',()=>{if(player.elem!==ICE)player.switchElem()});
+  document.getElementById('btn-ult').addEventListener('click',activateUltimate);
 }
 
-function updateElemUI() {
-  let ind = document.getElementById('elem-indicator');
-  ind.className = player.elem;
-  document.getElementById('btn-fire').classList.toggle('active', player.elem === FIRE);
-  document.getElementById('btn-ice').classList.toggle('active', player.elem === ICE);
+// ── 缩放 ──────────────────────────────────────────────────
+function resize(){
+  let w=document.getElementById('game-wrap'),ww=window.innerWidth,wh=window.innerHeight,rw,rh;
+  if(ww/wh>9/16){rh=wh;rw=rh*9/16}else{rw=ww;rh=rw*16/9}
+  w.style.width=rw+'px';w.style.height=rh+'px';scale=rw/W;
 }
 
-// ── 输入处理 ────────────────────────────────────────────────
-function initInput() {
-  // 键盘
-  window.addEventListener('keydown', e => {
-    keys[e.key.toLowerCase()] = true;
-    if (e.key === ' ' || e.key === 'j') { player.switchElem(); e.preventDefault(); }
-    if (e.key === 'k' || e.key === 'shift') { activateUltimate(); e.preventDefault(); }
-  });
-  window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
-
-  // 触摸
-  canvas.addEventListener('touchstart', e => {
-    e.preventDefault();
-    for (let t of e.changedTouches) {
-      touches[t.identifier] = { sx: t.clientX, sy: t.clientY, cx: t.clientX, cy: t.clientY };
-    }
-    if (e.touches.length === 1) touchActive = true;
-  }, {passive: false});
-
-  canvas.addEventListener('touchmove', e => {
-    e.preventDefault();
-    for (let t of e.changedTouches) {
-      if (touches[t.identifier]) {
-        touches[t.identifier].cx = t.clientX;
-        touches[t.identifier].cy = t.clientY;
-        if (e.touches.length === 1) {
-          touchDX = (t.clientX - touches[t.identifier].sx) / scale;
-          touchDY = (t.clientY - touches[t.identifier].sy) / scale;
-        }
-      }
-    }
-  }, {passive: false});
-
-  canvas.addEventListener('touchend', e => {
-    for (let t of e.changedTouches) {
-      let T = touches[t.identifier];
-      if (T) {
-        let dx = T.cx - T.sx, dy = T.cy - T.sy;
-        if (Math.abs(dx) < 10 && Math.abs(dy) < 10) {
-          // Tap → 切换元素
-          player.switchElem();
-        }
-        delete touches[t.identifier];
-      }
-    }
-    if (Object.keys(touches).length === 0) { touchActive = false; touchDX = 0; touchDY = 0; }
-  });
-
-  // UI 按钮
-  document.getElementById('btn-fire').addEventListener('click', () => { if (player.elem !== FIRE) player.switchElem(); });
-  document.getElementById('btn-ice').addEventListener('click', () => { if (player.elem !== ICE) player.switchElem(); });
-  document.getElementById('btn-ult').addEventListener('click', activateUltimate);
-}
-
-// ── 缩放适配 ────────────────────────────────────────────────
-function resize() {
-  let wrap = document.getElementById('game-wrap');
-  let ww = window.innerWidth, wh = window.innerHeight;
-  let rw, rh;
-  if (ww / wh > 9/16) {
-    rh = wh; rw = rh * 9/16;
-  } else {
-    rw = ww; rh = rw * 16/9;
-  }
-  wrap.style.width = rw + 'px';
-  wrap.style.height = rh + 'px';
-  scale = rw / W; // W=540
-}
-
-// ── 游戏循环 ────────────────────────────────────────────────
-function gameLoop() {
-  update();
-  render();
-  requestAnimationFrame(gameLoop);
-}
-
-// ── 启动 ────────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', () => {
-  canvas = document.getElementById('gc');
-  ctx = canvas.getContext('2d');
-  canvas.width = W; canvas.height = H;
-
-  resize();
-  window.addEventListener('resize', resize);
-  window.addEventListener('orientationchange', () => setTimeout(resize, 300));
-
-  initInput();
-  initGame();
-  gameLoop();
-});
-
-// 全局重启入口
-window.restartGame = restartGame;
+function gameLoop(){update();render();requestAnimationFrame(gameLoop)}
+window.addEventListener('DOMContentLoaded',()=>{cv=document.getElementById('gc');ctx=cv.getContext('2d');cv.width=W;cv.height=H;resize();window.addEventListener('resize',resize);window.addEventListener('orientationchange',()=>setTimeout(resize,300));initInput();initGame();gameLoop()});
+window.restartGame=restartGame;
 </script>
 </body>
 </html>
